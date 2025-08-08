@@ -1,2 +1,3 @@
 Hello to git
 Another line added
+Feature line
