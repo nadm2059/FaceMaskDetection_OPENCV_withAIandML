@@ -1,6 +1,4 @@
-Here’s a complete README.md updated to fully include **both TensorFlow and PyTorch** training and inference workflows, clearly separated and explained:
 
-````markdown
 # Face Mask Detection Project
 
 This project implements face mask detection using deep learning with **both TensorFlow and PyTorch** frameworks. It supports training and inference in both, and includes a Streamlit web app for easy interaction.
