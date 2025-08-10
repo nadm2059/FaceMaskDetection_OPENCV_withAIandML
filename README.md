@@ -1,65 +1,39 @@
-Here's a comprehensive **README.md** for your face mask detection project that covers all your scripts, usage, and setup:
 
-```markdown
 # Face Mask Detection Project
 
-This project implements a face mask detection system using deep learning with TensorFlow and MobileNetV2. It includes scripts for training a model, detecting masks from images and webcam video, and a simple web app built with Streamlit.
+This project provides a complete pipeline for detecting face masks in images and webcam video using deep learning models built with TensorFlow. It includes:
 
----
-
-## Features
-
-- Train a mask detection model on labeled images (`with_mask` and `without_mask`).
-- Detect face masks in static images (`detect_from_image.py`).
-- Real-time mask detection from webcam feed (`detect_from_webcam.py`).
-- Streamlit web app for uploading images and predicting mask presence (`app.py`).
+- Training a MobileNetV2-based mask detector model
+- Detecting masks from static images
+- Real-time mask detection using webcam input
+- A simple Streamlit web app for easy interaction
 
 ---
 
 ## Project Structure
 
-```
-
-src/
-├── detect\_from\_image.py       # Detect mask from a single image file via command line
-├── detect\_from\_webcam.py      # Detect mask from webcam feed in real-time
-├── train.py                   # Train the mask detection model using TensorFlow
-app/
-└── app.py                    # Streamlit web application for mask detection
-models/
-└── mask\_detector.h5          # Saved trained model (TensorFlow)
-data/
-└── train/                    # Training data with subfolders 'with\_mask' and 'without\_mask'
-
-````
+- `src/train.py` — Script to train the mask detector model using transfer learning with MobileNetV2.
+- `src/detect_from_image.py` — Script to run mask detection on a single image from the command line.
+- `src/detect_from_webcam.py` — Script for real-time mask detection via webcam.
+- `app/app.py` — Streamlit web app for interactive mask detection from uploaded images.
+- `models/mask_detector.h5` — Saved trained model (created by `train.py`).
 
 ---
 
-## Setup Instructions
-
-### Requirements
+## Setup & Requirements
 
 - Python 3.7+
 - TensorFlow
-- OpenCV
+- OpenCV (`cv2`)
 - NumPy
-- Streamlit (for web app)
+- Streamlit (for the app)
 - PIL (Pillow)
 
-Install required packages using pip:
+Install dependencies using pip:
 
 ```bash
 pip install tensorflow opencv-python numpy streamlit pillow
 ````
-
-### Prepare Dataset
-
-* Organize your training images inside `data/train` with two subfolders:
-
-  * `with_mask/`
-  * `without_mask/`
-
-Each folder should contain relevant images.
 
 ---
 
@@ -67,82 +41,93 @@ Each folder should contain relevant images.
 
 ### 1. Train the Model
 
-Train the model with data augmentation and validation split:
+Make sure your training dataset is organized as:
+
+```
+data/
+└── train/
+    ├── with_mask/
+    └── without_mask/
+```
+
+Run training:
 
 ```bash
 python src/train.py
 ```
 
-This saves the trained model as `models/mask_detector.h5`.
+This will train the model for 5 epochs and save it to `models/mask_detector.h5`.
 
 ---
 
 ### 2. Detect Mask from Image
 
-Run detection on an image file via command line:
+Run detection on a single image via command line:
 
 ```bash
-python src/detect_from_image.py path/to/image.jpg
+python src/detect_from_image.py path_to_image.jpg
 ```
 
-Output:
+Example output:
 
 ```
 Prediction: Mask
 ```
 
-or
-
-```
-Prediction: No Mask
-```
-
 ---
 
-### 3. Detect Mask from Webcam
+### 3. Real-time Detection from Webcam
 
-Start webcam mask detection (press 'q' to quit):
+Run the real-time webcam detection:
 
 ```bash
 python src/detect_from_webcam.py
 ```
 
-A window will open showing the webcam feed with the predicted label ("Mask" or "No Mask") overlayed.
+Press `q` to quit the webcam window.
 
 ---
 
-### 4. Run Streamlit Web App
+### 4. Run the Streamlit Web App
 
-Launch the web app for easy image upload and mask detection:
+Start the app:
 
 ```bash
 streamlit run app/app.py
 ```
 
-Upload an image and get instant prediction with a user-friendly interface.
+Upload an image via the web interface and get mask detection results instantly.
+
+---
+
+## Model Details
+
+* Base model: MobileNetV2 pretrained on ImageNet (transfer learning).
+* Input size: 224x224 RGB images.
+* Binary classification: Mask vs No Mask.
+* Output: Sigmoid activation for binary prediction.
 
 ---
 
 ## Notes
 
-* The model is based on MobileNetV2 pretrained on ImageNet with the top layer replaced for binary classification.
-* Image input size is 224x224 pixels.
-* The model outputs a probability used to classify mask presence (threshold 0.5).
-* You can extend this project to detect faces first before mask classification for improved accuracy.
+* The threshold for mask detection is 0.5. Predictions below 0.5 indicate a mask, above indicate no mask.
+* Modify `train.py` to adjust epochs, batch size, or add data augmentations.
+* The Streamlit app currently supports only image upload, but can be extended for webcam input.
 
 ---
 
 ## License
 
-This project is provided as-is for educational purposes.
+This project is released under the MIT License.
 
 ---
 
-Feel free to contribute or raise issues!
+## Author
+
+Nadhirah Michael-Ho 
 
 ```
 
 ---
 
-If you want, I can help you generate a minimal `requirements.txt` or improve the web app further!
-```
