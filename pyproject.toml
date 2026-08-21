@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "face-mask-detector-nadm2059"
+name = "face-mask-detector-nadm2059"  # <--- Update to a unique name
 version = "1.0.0"
 description = "Dual-framework (TensorFlow & PyTorch) face mask detection system with Streamlit deployment."
 readme = "README.md"
@@ -21,4 +21,4 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/YOUR_USERNAME/face-mask-detector"
+Homepage = "https://github.com/nadm2059/FaceMaskDetection_OPENCV_withAIandML"
