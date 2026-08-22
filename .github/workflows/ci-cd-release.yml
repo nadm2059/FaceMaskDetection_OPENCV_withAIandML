@@ -1,104 +1,187 @@
+# Name of the GitHub Actions workflow as it appears in the Actions dashboard tab
 name: CI/CD & Automated GitHub Release
 
+# Defines event triggers that cause this workflow pipeline to run
 on:
+  # Trigger workflow execution when code is pushed
   push:
+    # Trigger on code pushes to main or master branches
     branches: [ "main", "master" ]
+    # Trigger on version tags following semantic versioning (e.g., v1.0.0)
     tags:
       - 'v*.*.*'
+  # Trigger workflow execution on pull request events
   pull_request:
+    # Trigger on PRs targeting main or master branches
     branches: [ "main", "master" ]
 
+# Define parallel or sequential jobs to execute in the runner environment
 jobs:
+  # First job: Focuses on quick code quality checks and static analysis
   test:
+    # Display name for the job in the GitHub Actions UI
     name: Run Linting & Basic Sanity Checks
+    # Specify the virtual OS environment host provided by GitHub Actions
     runs-on: ubuntu-latest
 
+    # Sequential execution steps within the test job
     steps:
+      # Step 1: Clone the repository source code into the runner workspace
       - name: Checkout Repository
+        # Official GitHub Action to check out repository code
         uses: actions/checkout@v4
 
+      # Step 2: Configure Python runtime environment on the runner
       - name: Set up Python
+        # Official GitHub Action to set up Python
         uses: actions/setup-python@v5
         with:
+          # Target Python version runtime
           python-version: '3.10'
 
+      # Step 3: Install project dependencies and testing tools
       - name: Install Dependencies
+        # Multi-line bash command block
         run: |
+          # Upgrade pip to the latest release
           python -m pip install --upgrade pip
+          # Install linter (flake8) and test runner framework (pytest)
           pip install flake8 pytest
+          # Install core project dependencies from requirements.txt
           pip install -r requirements.txt
 
+      # Step 4: Perform static code analysis using flake8 linter
       - name: Code Linting
+        # Multi-line bash command block
         run: |
-          # Stop build if there are Python syntax errors or undefined names
+          # Fail workflow on syntax errors or undefined variable references
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # Exit-zero treats all errors as warnings
+          # Audit non-critical style guide warnings without failing the job run
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+  # Second job: Handles building binaries, drafting release notes, and publishing packages
   build-and-release:
+    # Display name for the job in the GitHub Actions UI
     name: Build Package & Create GitHub Release
+    # Ensure this job only executes if the 'test' job succeeds
     needs: test
+    # Run condition: Execute ONLY when triggered by a release tag (e.g., refs/tags/v1.0.0)
     if: startsWith(github.ref, 'refs/tags/')
+    # Runner environment OS
     runs-on: ubuntu-latest
+    # Explicit security token permissions scope configuration
     permissions:
+      # Permission to upload release assets and draft GitHub Releases
       contents: write
-      packages: write   # Required to publish Docker containers to GitHub Packages
-      id-token: write   # Required for PyPI Trusted Publishing
+      # Permission to publish Docker containers and npm packages to GitHub Packages
+      packages: write
+      # Permission required to request OpenID Connect tokens for PyPI Trusted Publishing
+      id-token: write
 
+    # Sequential execution steps within the build-and-release job
     steps:
+      # Step 1: Clone the repository source code at the tagged commit
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Step 2: Configure Python runtime environment for build tooling
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      # Step 3: Install binary build utilities and OS system tools
       - name: Install Build Tools
         run: |
+          # Upgrade package manager
           python -m pip install --upgrade pip
+          # Install wheel and source distribution build tools
           pip install build setuptools wheel
+          # Install system zip utility to package model binaries
           sudo apt-get update && sudo apt-get install -y zip
 
+      # Step 4: Generate Python source tarball (.tar.gz) and binary wheel (.whl) packages
       - name: Build Python Package
         run: |
+          # Build artifacts into dist/ folder
           python -m build
 
+      # Step 5: Compress pre-trained machine learning weights into a zip archive
       - name: Bundle Pre-trained Models
         run: |
-          # Compress weight binaries into a single release asset
+          # Recursively compress the models folder contents
           zip -r model_weights.zip models/
 
+      # Step 6: Draft GitHub Release and attach built distribution assets
       - name: Create GitHub Release
+        # Popular third-party action for creating GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
+          # Define list of asset paths to upload with the release
           files: |
             dist/*.whl
             dist/*.tar.gz
             model_weights.zip
+          # Set release as published (not a draft)
           draft: false
+          # Set release as production ready (not a prerelease)
           prerelease: false
+          # Automatically generate commit changelog release notes
           generate_release_notes: true
         env:
+          # Provide repository access token for release creation
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Step 7: Publish Python package distribution files to PyPI
       - name: Publish Package to PyPI
+        # Official PyPI publication action
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          # Target PyPI index repository URL
           repository-url: https://upload.pypi.org/legacy/
 
+      # Step 8: Authenticate against GitHub Container Registry (ghcr.io)
       - name: Log in to GitHub Container Registry
+        # Docker official login action
         uses: docker/login-action@v3
         with:
+          # Target container registry address
           registry: ghcr.io
+          # Authenticate using triggering user context
           username: ${{ github.actor }}
+          # Authenticate using job execution token
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Step 9: Build application Docker image and push to GitHub Packages
       - name: Build and Push Docker Image to GitHub Packages
+        # Docker official build and push action
         uses: docker/build-push-action@v5
         with:
+          # Docker build context directory path
           context: .
+          # Push image artifact to remote registry after build completes
           push: true
+          # Container image tags to assign in GitHub Container Registry
           tags: |
             ghcr.io/${{ github.repository_owner }}/facemaskdetection:latest
             ghcr.io/${{ github.repository_owner }}/facemaskdetection:${{ github.ref_name }}
+
+      # Step 10: Configure Node.js runtime and npm registry authentication
+      - name: Set up Node.js
+        # Official GitHub Action to set up Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          # Specify Node.js version runtime
+          node-version: '20'
+          # Set default npm target registry address to GitHub Packages
+          registry-url: 'https://npm.pkg.github.com'
+          # Target organization or user account scope for npm package namespace
+          scope: '@nadm2059'
+
+      # Step 11: Publish package to GitHub npm Registry
+      - name: Publish to GitHub npm Registry
+        # Execute standard npm publish command
+        run: npm publish
+        env:
+          # Provide GitHub token authentication for npm registry operations
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
