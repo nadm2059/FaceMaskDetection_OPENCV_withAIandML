@@ -1,18 +1,13 @@
 {
   "name": "@nadm2059/facemaskdetection",
-  "version": "1.0.0",
-  "description": "Face mask detection model and client utilities",
+  "version": "1.0.4",
+  "description": "Face mask detection model package",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nadm2059/FaceMaskDetection_OPENCV_withAIandML.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
-  },
-  "author": "nadm2059",
-  "license": "MIT"
+  }
 }
