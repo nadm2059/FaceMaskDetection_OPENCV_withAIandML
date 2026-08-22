@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "face-mask-detector-nadm2059"  # <--- Update to a unique name
-version = "1.0.0"
+name = "face-mask-detector-nadm2059"
+version = "1.0.6"
 description = "Dual-framework (TensorFlow & PyTorch) face mask detection system with Streamlit deployment."
 readme = "README.md"
 authors = [{ name = "Nadhirah" }]
@@ -14,7 +14,7 @@ dependencies = [
     "tensorflow",
     "torch",
     "torchvision",
-    "opencv-python",
+    "opencv-python-headless",
     "numpy",
     "streamlit",
     "pillow"
