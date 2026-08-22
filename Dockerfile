@@ -1,9 +1,10 @@
 # Use lightweight Python 3.10 slim base image
 FROM python:3.10-slim
 
-# Prevent Python from writing .pyc files and enable unbuffered output for real-time logging
+# Prevent Python from writing .pyc files and enable unbuffered output
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
 
 # Install system dependencies required for OpenCV and image processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -27,5 +28,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project source code and models into container
 COPY . .
 
-# Default command to run when the container starts
-CMD ["python", "main.py"]
+# Launch app.py from the app/ directory
+CMD ["python", "app/app.py"]
